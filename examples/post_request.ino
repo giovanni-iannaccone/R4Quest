@@ -11,15 +11,10 @@ int status = WL_IDLE_STATUS;
 
 void setup() {
     Serial.begin(9600);
-    if (WiFi.status() == WL_NO_MODULE) {
+    if (WiFi.status() == WL_NO_SHIELD) {
         Serial.println("Communication with WiFi module failed!");
         while (true)
         ;
-    }
-
-    String fv = WiFi.firmwareVersion();
-    if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-        Serial.println("Please upgrade the firmware");
     }
 
     while (status != WL_CONNECTED) {
@@ -33,8 +28,5 @@ void setup() {
 
 void loop() {
     client.set_header("Content-Type", "application/json");
-    int status_code = client.request_post(IP, "{\"name\": \"HTTPLib\"}");
-
-    if (status_code == HTTP_OK)
-        Serial.println("OK");
+    client.request_post(IP, 80, "{\"name\": \"HTTPLib\"}");
 }

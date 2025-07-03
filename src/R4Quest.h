@@ -1,45 +1,56 @@
-#ifndef _R4QUEST_
-#define _R4QUEST_
+#ifndef __R4QUEST_H__
+#define __R4QUEST_H__
 
-#include <string>
 #include <vector>
-
 #include <WiFi.h>
 
-#define HTTP_OK             200
-#define HTTP_NOT_FOUND      404
-#define HTTP_TIMEOUT        408
-#define HTTP_INTERNAL_ERROR 500
-#define HTTP_UNAVAILABLE    503
+#define R4QUEST_BUFSIZ 256
+#define HTTP_ARDUINO_USER_AGENT "ArduinoWiFi/1.1"
+#define HTTP_PORT 80
+
+enum class HTTPMethod {
+    Get,
+    Post,
+    Delete,
+    Put
+};
+
+struct HTTPHeader {
+
+    HTTPHeader(String name, String value)
+        : name{std::move(name)},
+          value{std::move(value)} {}
+
+    String name;
+    String value;
+};
 
 class HTTPClient {
-private:
-
-    std::vector<std::string > headers;
-    WiFiClient client;
-
-    std::string &receive_response();
-    void send_headers(const std::string url, const int port);
-    std::string &send_request(const std::string url, const int port, const std::string method, const std::string body);
-
 public:
 
     HTTPClient();
     ~HTTPClient();
 
     void clear_headers();
+    void remove_header(const String& name);
 
-    void remove_header(const std::string header);
-    void remove_header_by_key(const std::string key);
+    String request_delete(const String& url, int port = HTTP_PORT, const String& body = "");
+    String request_get(const String& url, int port = HTTP_PORT, const String& body = "");
+    String request_post(const String& url, int port = HTTP_PORT, const String& body = "");
+    String request_put(const String& url, int port = HTTP_PORT, const String& body = "");
 
-    std::string &request_delete(const std::string url, const int port = 80, const std::string body = "");
-    std::string &request_get(const std::string url, const int port = 80, const std::string body = "");
-    std::string &request_post(const std::string url, const int port = 80, const std::string body = "");
-    std::string &request_put(const std::string url, const int port = 80, const std::string body = "");
+    void set_authorization(String auth);
+    HTTPClient& set_header(String name, String value);
 
-    void set_authorization(const std::string auth);
-    void set_header(const std::string header);
-    void set_header(const std::string key, const std::string value);
+private:
+
+    String receive_response();
+    void send_headers();
+    String send_request(const String& url, int port, HTTPMethod method, const String& body);
+
+    std::vector<HTTPHeader> headers;
+    WiFiClient client;
+
 };
 
 #endif
